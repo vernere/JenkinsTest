@@ -3,24 +3,43 @@ pipeline {
 
     tools {
         maven 'Maven 3.8.1' // Ensure Maven is installed and configured in Jenkins
-        jdk 'JDK 17'       // Ensure JDK 17 is installed and configured in Jenkins
     }
 
     stages {
+        stage('Checkout') {
+            steps {
+                echo 'Checking out source code...'
+                git branch: 'main', url: 'https://github.com/vernere/JenkinsTest.git'
+            }
+        }
         stage('Build') {
             steps {
                 echo 'Building...'
-                git branch: 'main', url: 'https://github.com/vernere/JenkinsTest.git'
+                bat 'mvn clean install'
             }
         }
         stage('Test') {
             steps {
                 echo 'Testing...'
+                bat 'mvn test'
             }
         }
-        stage('Deploy') {
+        stage('Code coverage') {
             steps {
-                echo 'Deploying...'
+                echo 'Calculating code coverage...'
+                bat 'mvn jacoco:report'
+            }
+        }
+        stage('Publish test Reports') {
+            steps {
+                echo 'Publishing reports...'
+                junit '**/target/surefire-reports/*.xml'
+            }
+        }
+        stage('publish coverage reports') {
+            steps {
+                echo 'Publishing coverage reports...'
+                jacoco()
             }
         }
     }
